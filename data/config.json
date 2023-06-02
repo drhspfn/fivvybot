@@ -1,0 +1,13 @@
+{
+    "botToken": "5994630794:AAGyeV_boKINOV3CdyAvKQLawymzblC9mKc",
+    "deezerARL": "4e0a09a3c51bced835a321780fea773846b2f95dc61e15c96b71a959d78598b35a55c1e1ed8d1f998f99074c93cb3b11326bf32efe9e40919f65ea136b0833baea41b2bc5358d356eda4cc80b9d0dd67f636e1a24616eb1d354d2d993b5dfba0",
+    "geniusAPI": "ls89HddC_G4s66PiALTjibFlZxtBBh_lkAe_0A5whBiJJZ-ksGWgAOY_jVMrbkLi",
+    "soundcloudAUTH":"2-293936-475145775-jGL5CwUy2ymafh",
+    "soundcloudStatus": false,
+    "SPOTIFY": {
+        "CLIENT_ID": "6b398beded3f4f4c9d409137d968baca",
+        "CLIENT_SECRET": "af708bed6b50436c89792d992f542864"
+    },
+
+    "PROVIDER_TOKEN": "632593626:TEST:sandbox_i37030284230"
+}

@@ -1,0 +1,65 @@
+
+
+{
+    "startMessage": "Hi <b><i>{}</i></b>.\n\nThis bot is for music search.\nUse menu to control\n\n * Track Search🔍 - <b>Track Search Menu</b>\n * Lyrics search 📔 - <b>Lyrics search menu</b>\n * Tags search🔍 - <b>Track auto-search tags menu</b>\n * Settings⚙️ - <b>Bot settings </b>",
+    "startMessage_Lang": "Hello <b>{}</b>.\n\nPlease choose a language",
+    
+    "searchTrack_Main":"<i>Track Search.</i>\nSelect a search method\n<b>SoundCloud</b> - download only 30 seconds\n\nUse the menu to select",
+    "searchTrack_TextSearch": "Please send the search text",
+    "searchTrack_Error": "Sorry, the search was inconclusive...",
+    "searchTrack_ErrorSC": "Sorry, the SoundCLoud download may not work, try again. If it doesn't work, sorry...",
+    "searchTrack_Results": "Search results:\n\n",
+    "searchTrack_AlertStart": "The beginning of the download: {} - {}",
+    "searchTrack_AlertEnd": "Upload completed. Sending....",
+
+    "helpMessage": "Help in using the bot:\n\nUse the menu to interact with the bot.\nSome commands are also available.\n/clip <b>Query</b> - Search for a YouTube clip\n/lyric <b>Query</b> - Genius Lyric Search\n\nCommand /tag - Used only in the description of the sent audio.\n\nThe /lyric and /clip commands can be used to respond to audio in chat.\n\nAlso, you can send a voice message or video to search for a song (no more than 15 seconds)",
+    
+    "lyricSuccess": "Found lyrics for: <b>{} - {}</b>\n\n<b>{}</b>",
+    "lyricError": "We didn't find anything to your query...",
+    "lyricStart": "We start the search for your query.",
+
+    "lyricTooLong":"Sorry, the lyrics are too big for the message. Open it in a browser\n\n<a href='{}'>{} - {}</a>",
+
+    "searchTags_Main": "Please send the audio, it will be searched if it already contains tags or add them in the signature of the message",
+    "searchTags_Error": "We were unable to find the tags, try adding a description to the audio, or check it for correctness...",
+    "searchTags_ErrorExt":"Sorry, but the file extension should be <b>.mp3</b>.",
+    "searchTags_Search": "Looking for...🔍",
+    "searchTags_Updating": "Tags found, audio update..",
+
+
+    "searchClipSuccess": "Here's a link to a clip we found:\n\n<a href='{}'>{}</a>",
+
+    "dbStats": "Bot internal statistics:\n\n<i>General:</i>\nUsers: <b>{}</b>\n\n<i>Track database:</i>\nDeezer tracks: <b>{}</b>\nYTM tracks: <b>{}</b>\nSoundCloud tracks: <b>{}</b>",
+    "userStats": "Looks like you're here 🥳, here's your brief stats\n\nYou are with us with: <b>{}</b>\nYou have download <b>{}</b> tracks",
+
+
+    "standart_AD": "<i>[Advertisement]</i>.\n\nProviding programming services, development of bots on a turnkey basis and more.\nAlso disabling advertising in bots.\n\nContact: @drhspfn",
+
+    "Butons": {
+        "mainMenu_search":"Search tracks🔍", 
+        "mainMenu_lyric":"Find lyrics 📔", 
+        "mainMenu_tag":"Search tags🔍", 
+        "mainMenu_settings": "Settings⚙️",
+
+        "settings_Keys": "Audio buttons 📌",
+        "settings_Album": "Send album 📌",
+        "settings_Lang":"Language 🌏",
+        "settings_buyAD": "Disabling ads ✖️",
+
+        "Help": "Help ❔",
+        "Back":"Back 🔙",
+
+        "BUY": "Buy 💳"
+    },
+
+    "shazam_Founded": "Maybe you were looking for: <code>{} - {}</code>",
+    "shazam_Start": "Let's start the search...",
+    "shazam_NotFounded": "We couldn't find anything...",
+    "shazam_DurationError": "Sorry, but your message is too long. More than 15 seconds.",
+
+    "settingsMain": "⚙️ Settings menu ⚙️\n    - Change language\n    - Send buttons along with audio: {}\n    - Send the album together with the tags: {}\n\n<i>Use buttons to interact</i>",
+    "settingsLang":"Select one of the available languages",
+    "settingsAD": "<i>Disabling ad in this bot</i>\n\nCost: <b>$1</b>\n\nInformation:\n  - Paid once and forever\n  - Affects all ads in the bot",
+
+    "error": "Unknown phrase. Contact the developer"
+}

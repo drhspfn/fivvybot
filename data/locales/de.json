@@ -1,0 +1,65 @@
+{
+    "startMessage": "Hallo <b><i>{}</i></b>.\n\nDieser Bot dient der Musiksuche.\nVerwenden Sie das Menü zur Steuerung\n\n * Titelsuche🔍 – <b>Titelsuchmenü</b>\n * Songtext-Suche 📔 – <b>Lyrics-Suchmenü</b>\n * Tag-Suche🔍 – <b>Track-Tag-Autosuchmenü</b>\n * Einstellungen⚙️ – <b>Bot-Einstellungen </b>",
+    "startMessage_Lang": "Willkommen <b>{}</b>.\n\nBitte wählen Sie eine Sprache aus",
+    
+    "searchTrack_Main":"<i>Nach Titeln suchen.</i>\nWählen Sie eine Suchmethode.\n<b>SoundCloud</b> – Download dauert nur 30 Sekunden.\n\nVerwenden Sie die Schaltflächen",
+    "searchTrack_TextSearch": "Bitte senden Sie den zu durchsuchenden Text",
+    "searchTrack_Error": "Leider wurden keine Suchergebnisse gefunden...",
+    "searchTrack_ErrorSC": "Leider funktioniert das Herunterladen von SoundCLoud möglicherweise nicht. Bitte versuchen Sie es erneut. Wenn es nicht funktioniert, tut es mir leid.",
+    "searchTrack_Results": "Suchergebnisse:\n\n",
+    "searchTrack_AlertStart": "Ladevorgang starten: {} - {}",
+    "searchTrack_AlertEnd": "Download abgeschlossen. Abfahrt....",
+
+    "helpMessage": "Hilfe bei der Verwendung des Bots:\n\nVerwenden Sie das Menü, um mit dem Bot zu interagieren. \nEinige Befehle sind ebenfalls verfügbar\n/clip <b>Query</b> – YouTube-Clip-Suche\n/lyric <b>Query</b> – Genius-Textsuche\n\n /tag-Befehl – ​​Wird nur in Audio verwendet Beschreibung, die gesendet wird.\n\nDie Befehle /lyric und /clip können eine Antwort auf Audio im Chat sein.\n\nSie können außerdem eine Sprachnachricht oder ein Video senden, um nach einem Lied zu suchen (bis zu 15 Sekunden).",
+
+    "dbStats": "Interne Bot-Statistiken:\n\n<i>Allgemein:</i>\nBenutzer: <b>{}</b>\n\n<i>Track-Datenbank:</i>\nDeezer-Tracks: <b>{}</b>\nYTM-Tracks: <b>{}</b>\nSoundCloud-Titel: <b>{}</b>",
+    "userStats": "",
+
+
+    "lyricSuccess": "Liedtext gefunden für: <b>{} - {}</b>\n\n<b>{}</b>",
+    "lyricError": "Wir haben zu Ihrer Anfrage nichts gefunden...",
+    "lyricStart": "Wir starten die Suche entsprechend Ihrer Anfrage.",
+    "lyricTooLong": "Entschuldigung, der Liedtext ist zu lang zum Posten. Öffnen Sie es in Ihrem Browser\n\n<a href='{}'>{} - {}</a>",
+
+
+    "searchTags_Main": "Bitte senden Sie Audio. Es wird durchsucht, ob darin bereits Tags vorhanden sind, oder fügen Sie diese zur Nachrichtensignatur hinzu",
+    "searchTags_Error": "Wir konnten die Tags nicht finden, versuchen, dem Audio eine Beschreibung hinzuzufügen oder zu überprüfen, ob es korrekt ist ...",
+    "searchTags_ErrorExt": "Entschuldigung, aber die Dateierweiterung muss <b>.mp3</b> sein",
+    "searchTags_Search": "Wir suchen...🔍",
+    "searchTags_Updating": "Tags gefunden, Audio wird aktualisiert...",
+
+    "searchClipSuccess": "Hier ist ein Link zu dem Clip, den wir gefunden haben:\n\n<a href='{}'>{}</a>",
+
+    "standart_AD": "<i>[Werbung]</i>\n\nBereitstellung von Programmierdiensten, Entwicklung schlüsselfertiger Telegram-Bots und mehr.\nAuch Deaktivierung von Anzeigen in Bots.\n\nKontakt: @drhspfn",
+
+
+    "Butons": {
+        "mainMenu_search":"Tracksuche 🔍", 
+        "mainMenu_lyric":"Suche nach Songtexten 📔", 
+        "mainMenu_tag":"Tag-Suche 🔍", 
+
+        "mainMenu_settings": "Einstellungen⚙️",
+        "settings_Keys": "Audio-Tasten 📌",
+        "settings_Album": "Album verschicken 📌",
+        "settings_Lang": "Sprache 🌏",
+        "settings_buyAD": "Werbung deaktivieren ✖️",
+
+        "Help": "Hilfe ❔",
+        "Back":"Zurück 🔙",
+        "BUY": "Kaufen 💳"
+    },
+
+    "shazam_Founded": "Möglicherweise haben Sie gesucht nach: <code>{} - {}</code>",
+    "shazam_Start": "Lasst uns mit der Suche beginnen...",
+    "shazam_NotFounded": "Wir konnten nichts finden...",
+    "shazam_DurationError": "Entschuldigung, aber Ihre Nachricht ist zu lang. Mehr als 15 Sekunden",
+
+    "settingsMain": "⚙️ Menü „Einstellungen“ ⚙️\n – Sprache ändern\n – Schaltflächen zum Senden mit Audio: {}\n – Album mit Tags senden: {}\n\n<i>Verwenden Sie Schaltflächen zur Interaktion</i>",
+    "settingsLang":"Wählen Sie eine der verfügbaren Sprachen aus",
+    "settingsAD": "<i>Anzeigen in diesem Bot deaktivieren</i>\n\nKosten: <b>1$</b>\n\nInformationen:\n – Ein für alle Mal bezahlt\n – Wirkt sich auf alle Anzeigen im Job aus",
+    
+    
+    "error": "Unbekannter Satz. Kontaktieren Sie den Entwickler"
+
+
+}
