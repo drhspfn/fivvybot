@@ -24,5 +24,5 @@ A small bot, written for my own use. Has the following functions:
 
 
 ## More details
-
+* ffmpeg must be installed. Or there is `ffmpeg.ex`e and `ffprobe.exe` (Win) in the root
 > I'm not claiming primacy. You are free to use this code. 
