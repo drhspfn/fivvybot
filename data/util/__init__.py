@@ -27,14 +27,15 @@ logging.basicConfig(level=logging.INFO, format='[%(asctime)s] - %(levelname)s | 
 
 
 
-TEMP_PATH = "./data/temp/"
 NO_IMAGE_URL = "https://targettiles.co.uk/wp-content/uploads/2019/09/products-sku2015_854.jpg"
 YOUTUBE_REGEX_ID = r"(?:\/|%3D|v=|vi=|v%3D|youtu.be%2F|embed\/|e\/|watch\?|&v=|\?v=|&vi=)([0-9A-Za-z_-]{11})"
 
 class Fivvy:
-    def __init__(self, dp:Dispatcher=None) -> None:
+    def __init__(self, temp_path, dp:Dispatcher=None) -> None:
         logging.log(logging.INFO, "Start the bot init...")
         self.DP = dp
+        self.TEMP_PATH = temp_path
+        self.LOCALES_PATH = './data/locales'
         self.config = {}
         self.locales = {}
 
@@ -50,8 +51,6 @@ class Fivvy:
             "update_s_mes": False,      # After downloading a track, whether or not to automatically go to the menu
             "sendKeys": True,           # The 'Lyric' 'Clip' buttons in the audio message
             "reg_date": "00.00.2022",   # User registration date
-            "dls": -1,                  # Number of tracks downloaded by the user
-            "cached_dls": -1,           # Same thing, but the cache
             "writeAlbum": True,         # Whether to send a track album in messages
             "message": {"id": 0, "chat":0},         # Place for information about the message-main menu
             "searchTracks":{"search_type":"", "count": 0, "list": []},      # Track search info
@@ -63,8 +62,13 @@ class Fivvy:
 
 
         self._load_config()
-        self._loadLocales()
+        if self.config['TEMP_PATH'] != self.TEMP_PATH:
+            self.TEMP_PATH = self.config['TEMP_PATH'] 
 
+        if self.config['LOCALES_PATH'] != self.LOCALES_PATH:
+            self.LOCALES_PATH = self.config['LOCALES_PATH'] 
+
+        self._loadLocales()
 
         # ...
         self.fastButtongs = {}
@@ -90,7 +94,7 @@ class Fivvy:
             self.shazam = Shazam()
             logging.log(logging.INFO, "Set up Deezer API...")
             self.deezerAPI = Deezer(self.config['deezerARL'])
-            print(self.deezerAPI.get_cookies())
+            #print(self.deezerAPI.get_cookies())
             logging.log(logging.INFO, "Set up YT Music API...")
             self.ytmusicAPI = ytmusicapi.YTMusic(auth = "./data/ytm_oauth.json")
             logging.log(logging.INFO, "Set up Genus API...")
@@ -117,6 +121,9 @@ class Fivvy:
             sys.exit()
 
     def _loadLocales(self):
+        if not os.path.exists(self.LOCALES_PATH):
+            return sys.exit('There are no localization files. Standard path is ./data/locales/ Or replaced by ./data/config.json')
+
         for file_name in os.scandir('./data/locales'):
             if file_name.name.endswith('.json') and file_name.is_file():
                 localization = os.path.splitext(file_name.name)[0]
@@ -175,9 +182,7 @@ class Fivvy:
                 "sendKeys": userData['sendKeys'],
                 'writeAlbum': userData['writeAlbum'],
                 'update_s_mes': userData['update_s_mes'],
-                "reg_date": userData['reg_date'],
-                "dls": userData['dls'],
-                "cached_dls": userData['dls'],
+                "reg_date": userData['reg_date']
             })
 
         await self.DP.storage.set_data(user=userid, data=data)
@@ -188,7 +193,6 @@ class Fivvy:
             if 'lang' in data:
                 await self.user_set(userid, {"lang": data['lang']})
                 self.user_exists.cache_clear()
-                #await self._clear_user_exists(userid)
                 await self.resetButtons()
     
 
@@ -323,16 +327,15 @@ class Fivvy:
         fileName = re.sub(r'[^\w\d]+', '-', fileName)
 
         fileName = unidecode.unidecode_expect_nonascii(fileName) 
-        path_to_mp3 = f"{TEMP_PATH}/{fileName}"
+        path_to_mp3 = f"{self.TEMP_PATH}/{fileName}"
 
         if track:
             try:
                 if download_from == "deezer":
                     deezerTrack = self.deezerAPI.get_track(track['trackID'])
-                    #print(("link", self.deezerAPI.get_track_download_url(deezerTrack['info'])))
                     self.deezerAPI.download_track(
                         deezerTrack['info'], 
-                        TEMP_PATH,
+                        self.TEMP_PATH,
                         with_metadata=True,
                         with_lyrics=False,
                         show_messages=False,
@@ -341,10 +344,10 @@ class Fivvy:
                 elif download_from == "sc":
                     downlod_link = track.get('sc_link', None)
                     newName = track.get('permalink', None)
-                    if newName: path_to_mp3 = f"{TEMP_PATH}/{newName}"
+                    if newName: path_to_mp3 = f"{self.TEMP_PATH}/{newName}"
                     
                     if downlod_link and newName:
-                        cmd = f"scdl -l {downlod_link} --path {TEMP_PATH} --onlymp3 --auth-token {self.config.get('soundcloudAUTH')} --name-format {newName} --hide-progress --hidewarnings"
+                        cmd = f"scdl -l {downlod_link} --path {self.TEMP_PATH} --onlymp3 --auth-token {self.config.get('soundcloudAUTH')} --name-format {newName} --hide-progress --hidewarnings"
                         os.system(cmd)
                     else:
                         return (None, )
@@ -354,7 +357,7 @@ class Fivvy:
                 elif download_from == "ytm":
                     ytdl = pt.YouTube("https://www.youtube.com/watch?v="+track['trackID'])
                     t = ytdl.streams.filter(only_audio=True).first()
-                    out_file = t.download(output_path=TEMP_PATH, )
+                    out_file = t.download(output_path=self.TEMP_PATH, )
                     base, _ = os.path.splitext(out_file)
                     path_to_mp3 = base
                     os.system(f'ffmpeg -i "{out_file}" -vn -ar 44100 -loglevel quiet -ac 2 -b:a 192k "{path_to_mp3+".mp3"}"')
@@ -382,13 +385,8 @@ class Fivvy:
         return (None, )
     
     async def download(self, loop:asyncio.BaseEventLoop, download_from:str, track:dict, userid:int):
-        time_start = time.time()
-        print("start downloading")
         data = await loop.run_in_executor(None, lambda: self._downloadTrack(download_from, track, userid))
-        
-        time_end = time.time()
-        total_time = time_end - time_start
-        #logging.log(logging.INFO, f"[DL] 'download' made a request for: {total_time:.3f}")
+    
         return data
 
     def _download_by_id(self, download_from:str, track_id:int):    
@@ -408,7 +406,7 @@ class Fivvy:
             filename = "{}-{}.mp3".format(artist_new, title_new)
             self.deezerAPI.download_track(
                 deezerTrack['info'], 
-                TEMP_PATH,
+                self.TEMP_PATH,
                 with_metadata=True,
                 with_lyrics=False,
                 show_messages=False,
@@ -416,7 +414,7 @@ class Fivvy:
             ) 
 
 
-        path_to_mp3 = f"{TEMP_PATH}/{filename}"
+        path_to_mp3 = f"{self.TEMP_PATH}/{filename}"
         return {"path": path_to_mp3, "artist": artist, "title": title, "album": album}
     
 
@@ -440,17 +438,10 @@ class Fivvy:
         return None
 
     async def get_from_base(self, searchID):
-        time_start = time.time()
-
         sql = f"SELECT * FROM music WHERE searchID = '{searchID}'"
         self.cursor.execute(sql)
         rows = self.cursor.fetchall()
 
-
-        time_end = time.time()
-        total_time = time_end - time_start
-        #logging.log(logging.INFO, f"[DB] 'get_from_base' made a request for: {total_time:.3f}")
-        
         if rows:
             return {
                 "searchID": searchID,
@@ -581,15 +572,6 @@ class Fivvy:
         #logging.log(logging.INFO, f"[FC] 'search' made a request for: {total_time:.3f}")
         return toUpdate
     
-    
-    def _youtube_by_id(self, video_id:str):
-        video  = pt.YouTube("https://www.youtube.com/watch?v="+video_id)
-        
-        return video.bypass_age_gate()
-
-    async def youtube_by_id(self, loop:asyncio.BaseEventLoop, video_id:str):
-        return await loop.run_in_executor(None, lambda: self._youtube_by_id(video_id))
-
     """
         OTHER
     """
@@ -708,7 +690,6 @@ class Fivvy:
             return await self.user_set(userid, data)
         
         userData.update(data)
-        #print(userData)
         return await self.DP.storage.set_data(user=userid, data=userData)
 
     async def add_to_dell(self, userid:int, message:types.Message):
