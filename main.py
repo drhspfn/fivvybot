@@ -5,7 +5,6 @@ def shutdown(signal, frame):
     return sys.exit('Intercept CTRL + C. Exit...')
 
 signal.signal(signal.SIGINT, shutdown)
-
 import logging
 from aiogram import Dispatcher, Bot, executor, types
 from aiogram.utils import exceptions
@@ -18,7 +17,7 @@ import os, re, eyed3
 from urllib.request import urlopen
 
 
-
+TEMP_PATH = './data/temp/'
 BOT_UNAVAILABLE = "I'm sorry, but I'm not available in groups, send me a private message. Don't mess with the group ;)"
 BOT_UNAVAILABLE_STICKERS = ["CAACAgIAAxkBAAIW32RnY2sew5GtJiaQxpN0ZMG6T_QeAALGCwACMDDRSDCM6vy68yvoLwQ", \
     "CAACAgIAAxkBAAIW4GRnY7G7OWvwMVTnybIVveUnf8WKAALmCwACFxQ4SL0JAAHunW88qy8E", \
@@ -28,84 +27,23 @@ BOT_UNAVAILABLE_STICKERS = ["CAACAgIAAxkBAAIW32RnY2sew5GtJiaQxpN0ZMG6T_QeAALGCwA
     "CAACAgIAAx0CbhFhsgADLWRnZFwUoKI6-Zcp3EDyd25WLeOgAALhCQACkZYISMHdtkBSi2MGLwQ", \
     "CAACAgIAAx0CbhFhsgADLmRnZG8xu3k5BN-cpXFh33nx1QOjAAJqDwAC4fiQSOfWIcUnv0MtLwQ"]
 
-BOT_BLOCK_IDS = []
-OFF_GROUPS = False
-FAST_COMMANDS = {}
 
-
-util = Fivvy()
-logging.log(logging.INFO, "Start of bot initialization...")
+util = Fivvy(TEMP_PATH)
 bot = Bot(token=util.config['botToken'], parse_mode="html", disable_web_page_preview=True, timeout=30)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 util.set_dp(dp)
 
-if not os.path.exists('./data/temp/'):
-    os.mkdir('./data/temp/')
-
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-
-
-async def send_user_statistic(message:types.Message, userid:int=None):
-    userid = userid if userid else message.from_user.id
-    data = await util.user_get(userid, ['dls', 'reg_date', 'lang'])
-    messageContent = await util.getText('userStats', userid)
-    messageContent = messageContent.format(data['reg_date'], data['dls'])
-    markup = await util.button_back(lang=data['lang'], to='menu')
-    return await edit_message(message, messageContent, markup, userid)
-
-
-
-@dp.message_handler(commands=['test'])
-async def dsfsdfdsfdsf(message: types.Message):
-    arg = message.get_args()
-    print(arg)
-    print(util.search_custom_tracks(arg))
-    return 
-
-@dp.message_handler(commands=['my_stat'])
-async def handle_Statistics(message: types.Message):
-    return await send_user_statistic(message)
-
-@dp.message_handler(commands=['stat'])
-async def handle_Statistics(message: types.Message):
-    userid = message.from_id
-    if not await util.user_exists(userid):
-        await sendRegistration(message)
-        return await message.delete()
-    
-
-    stats = await util._get_statistics(True if userid == 782000237 else False)
-    messageContent = await util.getText("dbStats", userid)
-    messageContent = messageContent.format(
-        stats.get('users', 0),
-        stats.get('deezer', 0),
-        stats.get('ytm', 0),
-        stats.get('sc', 0)
-    )
-    markup = await util.button_back(userid=userid)
-    await edit_message(message, messageContent, markup, userid)
-    return await message.delete()
-
-    #statistic_Message = await message.answer(messageContent, "html")
-    #await util.add_to_dell(userid, statistic_Message)
-    #return await message.delete()
-
-
-
+if not os.path.exists(TEMP_PATH):
+    os.mkdir(TEMP_PATH)
+###############################################################
+####################### [ COMMANDS ] ##########################
+###############################################################
 @dp.message_handler(commands=['start'])
 async def handle_StartMessage(message: types.Message):
     userid = message.from_user.id
-    if message.chat.type != "private" and OFF_GROUPS:
-        if message.from_id in BOT_BLOCK_IDS:
-            return await message.delete()
-        
+    if message.chat.type != "private":
         await message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(message.from_id)
         return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
 
     userCheck =  await util.user_exists(userid)
@@ -120,12 +58,8 @@ async def handle_StartMessage(message: types.Message):
 
 @dp.message_handler(commands=['lyric'])
 async def lyricHandler(message: types.Message):
-    if message.chat.type != "private" and OFF_GROUPS:
-        if message.from_id in BOT_BLOCK_IDS:
-            return await message.delete()
-        
+    if message.chat.type != "private":
         await message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(message.from_id)
         return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
         
     searchText = message.text or message.caption
@@ -144,14 +78,9 @@ async def lyricHandler(message: types.Message):
 
 @dp.message_handler(commands=['clip'])
 async def clipHandler(message: types.Message):
-    if message.chat.type != "private" and OFF_GROUPS:
-        if message.from_id in BOT_BLOCK_IDS:
-            return await message.delete()
-        
+    if message.chat.type != "private":
         await message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(message.from_id)
         return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
-    
 
     searchText = message.text or message.caption
     searchText = searchText.replace("/clip", "").strip()
@@ -164,31 +93,44 @@ async def clipHandler(message: types.Message):
 
     if len(searchText) <= 10:
         return await message.delete()
+    
     return await handleClipCommand(message, searchText, True)
+###############################################################
+####################### [ PUBLICS ] ##########################
+###############################################################
+async def handleQuery(message: types.Message):
+    if message.chat.type != "private":
+        await message.reply(BOT_UNAVAILABLE, "html")
+        return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
 
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
+
+    userid = message.from_user.id
+    functionActive = await util.user_get(userid, 'function_active')
+    functionActiveDatas = functionActive.split("_") if functionActive else None
+    if functionActiveDatas:
+        if functionActiveDatas[0] == "searchTrack":
+            await generateResult(message, functionActiveDatas[1])
+            await message.delete()
+
+        elif functionActiveDatas[0] == "findLyric":
+            return await sendLyric(message, message.text)
+
+        return
+
+    await util.user_set(userid, {'updateMenu': True})
+    return await util.add_to_dell(userid, message)
+
 @dp.callback_query_handler(lambda c: c.data and c.data.startswith('inlineMenu_'))
 async def main_Handler(callback_query: types.CallbackQuery):
-    if callback_query.message.chat.type != "private" and OFF_GROUPS:
-        if callback_query.message.from_id in BOT_BLOCK_IDS:
-            return await callback_query.message.delete()
-        
+    if callback_query.message.chat.type != "private":
         await callback_query.message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(callback_query.message.from_id)
         return await callback_query.message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
-    
 
     userid = callback_query.from_user.id
     username = callback_query.from_user.first_name
 
-    getData = await util.user_get(userid, ['writeAlbum', 'lang', 'dls', 'cached_dls', "update_s_mes"])
+    getData = await util.user_get(userid, ['writeAlbum', 'lang', "update_s_mes"])
 
-    dls = getData['dls']
-    cached_dls = getData['cached_dls']
     writeAlbum = getData['writeAlbum']
     userLang = getData['lang']
     update_s_mes = getData['update_s_mes']
@@ -201,21 +143,7 @@ async def main_Handler(callback_query: types.CallbackQuery):
         await sendRegistration(callback_query.message, userid, username)
         return await callback_query.message.delete()
     #############################################################################
-
-    
-
-    
-    #############################################################################
-    """if mainMessage.get('id', 0) == 0 \
-            and inlineType != "reg" \
-            and not inlineType in ['clip', 'lyric']:
-        await sendMainMenu(callback_query.message, userid, username)
-        return await callback_query.message.delete()"""
-    
-    #############################################################################
-    
     inlineData = dataStrip[2]
-
 
     if inlineType == "menu":
         if inlineData == "goMMenu":
@@ -245,24 +173,18 @@ async def main_Handler(callback_query: types.CallbackQuery):
         elif inlineData == "goLyric":
             messageContent = await util.getText("searchTrack_TextSearch", lang=userLang)
             markup = await util.button_back(lang=userLang, to='menu')
-            #markup = types.InlineKeyboardMarkup(row_width=1)
-            #markup.add(types.InlineKeyboardButton(util.fastButtongs[userLang]["Back"], callback_data="inlineMenu_menu_goMMenu"))
             await util.user_set(userid, {'function_active': 'findLyric'})
             return await edit_message(callback_query.message, messageContent, markup, userid, username)
 
         elif inlineData == "goTag":
             messageContent = await util.getText("searchTags_Main", lang=userLang)
             markup = await util.button_back(lang=userLang, to='menu')
-            #markup = types.InlineKeyboardMarkup(row_width=1)
-            #markup.add(types.InlineKeyboardButton(util.fastButtongs[userLang]["Back"], callback_data="inlineMenu_menu_goMMenu"))
             await util.user_set(userid, {'function_active': 'findTags'})
             return await edit_message(callback_query.message, messageContent, markup, userid,  username)
             
         elif inlineData == "goHelp":
             messageContent = await util.getText("helpMessage", lang=userLang)
             markup = await util.button_back(lang=userLang, to='menu')
-            #markup = types.InlineKeyboardMarkup(row_width=1)
-            #markup.add(types.InlineKeyboardButton(util.fastButtongs[userLang]["Back"], callback_data="inlineMenu_menu_goMMenu"))
             await edit_message(callback_query.message, messageContent, markup, userid,  username)
             return
         
@@ -307,14 +229,11 @@ async def main_Handler(callback_query: types.CallbackQuery):
 
     elif inlineType == "sTrack":
         messageContent = await util.getText("searchTrack_TextSearch", lang=userLang)
-        #markup = types.InlineKeyboardMarkup(row_width=1)
-        #markup.add(types.InlineKeyboardButton(util.fastButtongs[userLang]["Back"], callback_data="inlineMenu_menu_goSSearch"))
         markup = await util.button_back(lang=userLang, to='search')
         await util.user_set(userid, {'function_active': f"searchTrack_{inlineData}"})
         return await edit_message(callback_query.message, messageContent, markup, userid, username)
 
     elif inlineType == "lyric":
-        print(inlineData)
         inlineData = inlineData.replace("-", " ").replace("..", " - ")
         inlineData = re.sub(r'\b(?:remastered|remix|clip)\b', '', inlineData, flags=re.IGNORECASE)
         return await sendLyric(callback_query.message,inlineData, userid, username, False)
@@ -370,10 +289,6 @@ async def main_Handler(callback_query: types.CallbackQuery):
             )
             await callback_query.answer(callbackAnswer, True)
             await bot.send_chat_action(callback_query.message.chat.id, "upload_voice")
-            #dl_link = searchData['list'][downloadID]
-            #if searchData['list'][downloadID].get('sc_link'):
-            #    dl_link = searchData['list'][downloadID]['sc_link']
-            
             download = await util.download(asyncio.get_event_loop(), inlineType, searchData['list'][downloadID], userid)
             
             if download[0]:
@@ -382,7 +297,6 @@ async def main_Handler(callback_query: types.CallbackQuery):
                 except exceptions.ButtonDataInvalid:
                     audioMessage = await callback_query.message.answer_audio(open(download[0], "rb"), audioCaption, "html", reply_markup=None, performer=searchData['list'][downloadID]['artist'], title=searchData['list'][downloadID]['title'])
                 
-                #await util.del_from_cache(searchData['list'][downloadID])
                 await util.add_to_base(searchData['list'][downloadID]['trackID'], inlineType, audioMessage.audio.file_id, searchData['list'][downloadID]['artist'], searchData['list'][downloadID]['title'], searchData['list'][downloadID]['album'])
                 os.remove(download[0])
             else:
@@ -390,14 +304,8 @@ async def main_Handler(callback_query: types.CallbackQuery):
                 mesData = await callback_query.message.answer(callbackAnswer, "html")
                 await util.add_to_dell(userid, mesData)
 
-        dls += 1
-        if (dls - cached_dls) >= 3:
-            await util.update_user_db(userid, {'dls': dls})
-            await util.user_set(userid, {"cached_dls": dls})
-        else:
-            await util.user_set(userid, {"dls": dls})
             
-        await util.user_set(userid, {'updateMenu': True, "dls": dls})
+        await util.user_set(userid, {'updateMenu': True})
         if update_s_mes: return await sendMainMenu(callback_query.message, userid, username, True)
         
         return
@@ -413,10 +321,6 @@ async def main_Handler(callback_query: types.CallbackQuery):
             return await callback_query.answer("An error occurred during the database update. Contact the Creator: @drhspfn", True)
         
         return await sendSettings(callback_query.message, userid, username, inlineData)
-        #messageContent = await util.getText("settingsMain", lang=inlineData)
-        #markup = await util.button_Settings(userid)
-        #await edit_message(callback_query.message, messageContent, markup, userid, username)
-        #return
         
     elif inlineType == "shazam":
         shazamData = await util.user_get(userid, 'shazam_lyric')
@@ -439,7 +343,7 @@ async def main_Handler(callback_query: types.CallbackQuery):
         elif inlineData == "previewlink" and (shazamData.get("artist", None) and shazamData.get('title', None)):
             filename = '{} - {}.mp3'.format(shazamData['artist'], shazamData['title'])
             filename = re.sub(r'[<>:"/\\|?*]', '', filename)
-            filePath = f"./data/temp/{filename}"
+            filePath = f"{TEMP_PATH}{filename}"
             
             
             audio = await util.downloadPreview(asyncio.get_event_loop(), shazamData['previewlink'], filePath)
@@ -448,9 +352,7 @@ async def main_Handler(callback_query: types.CallbackQuery):
                 messageContent = util.audioCaption.format(
                     shazamData['artist'],
                     shazamData['title'],
-                    " ",
-                    "",
-                    ""
+                    " ", "", ""
                 )
                 markup = types.InlineKeyboardMarkup(row_width=1)
                 markup.add(types.InlineKeyboardButton("DELETE ❌", callback_data="inlineMenu_other_del"))
@@ -476,49 +378,6 @@ async def main_Handler(callback_query: types.CallbackQuery):
         await callback_query.answer("Registration successful. Enjoy using the bot😉", True)
         return await sendMainMenu(callback_query.message, userid, username)
 
-@dp.message_handler()
-
-async def handleQuery(message: types.Message):
-    if message.chat.type != "private" and OFF_GROUPS:
-        if message.from_id in BOT_BLOCK_IDS:
-            return await message.delete()
-        
-        await message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(message.from_id)
-        return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
-    
-
-
-    userid = message.from_user.id
-    functionActive = await util.user_get(userid, 'function_active')
-    functionActiveDatas = functionActive.split("_") if functionActive else None
-    if functionActiveDatas:
-        if functionActiveDatas[0] == "searchTrack":
-            await generateResult(message, functionActiveDatas[1])
-            await message.delete()
-
-        elif functionActiveDatas[0] == "findLyric":
-            return await sendLyric(message, message.text)
-
-        return
-
-    """
-    yt_check = await util.youtube_id(message.text)
-    if yt_check:
-        await message.delete()
-        youtube_data = await util.youtube_by_id(asyncio.get_event_loop(), yt_check)
-        print(youtube_data)
-        return """
-
-
-    await util.user_set(userid, {'updateMenu': True})
-    return await util.add_to_dell(userid, message)
-
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
 async def sendMainMenu(message:types.Message, userid:int=None, username:str=None, update:bool=False, group:bool=False):
     userid = userid if userid else message.from_user.id
     username = username if username else message.from_user.first_name
@@ -537,8 +396,6 @@ async def sendMainMenu(message:types.Message, userid:int=None, username:str=None
         return await edit_message(message, messageContent, markup, userid, username, update)
     else:
         try:
-
-
             if group:
                 newMainMessage = await bot.send_message(userid, messageContent,"html", reply_markup=markup,reply_to_message_id=message.message_id)
             else:
@@ -583,28 +440,18 @@ async def edit_message(message:types.Message, messageContent:str, markup, userid
         return await util.user_set(userid, {'message': {'id': newMessage.message_id, "chat": newMessage.chat.id}, 'updateMenu': False})
     else:
         try:
-            
             return await bot.edit_message_text(messageContent, mainMessage['chat'], mainMessage['id'], parse_mode="html", reply_markup=markup) 
         except exceptions.MessageToEditNotFound:
             await util.user_set(userid, {'message': {'id': 0, "chat": 0}})
-            return await sendMainMenu(message, userid, username, update)
-        
-        
-        except exceptions.ChatNotFound:
-            return
-        except exceptions.BotBlocked:
-            return
-        except exceptions.ChatAdminRequired:
-            return print("Бот не является администратором чата")
+            return await sendMainMenu(message, userid, username)
         except exceptions.RetryAfter as e:
             return print(f"Бот временно заблокирован. Повторить попытку через {e.timeout} секунд")
-        except exceptions.NetworkError:
-            return print("Проблемы с сетью или Telegram API")
-        except exceptions.TelegramAPIError as err: 
+        except exceptions.TelegramAPIError as err:
             if str(err).find('Message is not modified') != -1:
                 return print(f"|edit| Общая ошибка Telegram API\n\n{err}")
             else:
                 return
+            
 async def generateResult(message:types.Message, type:str="deezer", searchQuery:str=None, userid:int=None, username:str=None):
     userid = userid if userid else message.from_user.id
     username = username if username else message.from_user.first_name
@@ -642,14 +489,10 @@ async def generateResult(message:types.Message, type:str="deezer", searchQuery:s
     return await edit_message(message, messageContent, markup, userid, username)
 
 async def tagFinder(message:types.Message, userid:int, searchQuery:str, fileid):
-    if message.chat.type != "private" and OFF_GROUPS:
-        if message.from_id in BOT_BLOCK_IDS:
-            return await message.delete()
-        
+    if message.chat.type != "private":
         await message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(message.from_id)
         return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
-    
+
     mainMessage = await util.user_get(userid,"message")
     if mainMessage and mainMessage.get('id', 0) == 0:
         await sendMainMenu(message)
@@ -663,7 +506,7 @@ async def tagFinder(message:types.Message, userid:int, searchQuery:str, fileid):
 
     trackTags = await util.findTags(asyncio.get_event_loop(), searchQuery, userid)
     if trackTags.get("artist", None):
-        audioPath = "./data/temp/" + await util.random_filename(True, "tag")
+        audioPath = TEMP_PATH + await util.random_filename(True, "tag")
         await bot.download_file_by_id(fileid, audioPath)
         audiofile = eyed3.load(audioPath)
         if not audiofile.tag:
@@ -798,7 +641,8 @@ async def handleClipCommand(message:types.Message, searchQuery:str=None, delete=
 
             await util.add_to_dell(userid, mesData)
             if delete: await message.delete()
-
+        else:
+            await message.delete()
     return
 
 async def sendRegistration(message:types.Message, userid:int=None, username:str=None):
@@ -818,26 +662,12 @@ async def sendRegistration(message:types.Message, userid:int=None, username:str=
     newMes = await message.answer(messageText, "html", reply_markup=markup)
     await util.user_set(userid, {'message': {'id': newMes.message_id, "chat": newMes.chat.id}})
     
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-@dp.message_handler(content_types=['sticker'])
-async def handleStickers(message: types.Message):
-    return print(message.sticker.file_id)
-
-
 @dp.message_handler(content_types=['video', 'voice'])
 async def shazamHandler(message: types.Message):
-    if message.chat.type != "private" and OFF_GROUPS:
-        if message.from_id in BOT_BLOCK_IDS:
-            return await message.delete()
-        
+    if message.chat.type != "private":
         await message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(message.from_id)
         return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
-    
+
     
     userid = message.from_user.id
     ##################################################
@@ -857,14 +687,12 @@ async def shazamHandler(message: types.Message):
     contentDuration = message.video.duration if message.video else message.voice.duration
     if contentDuration > 15:
         markup = await util.button_back(lang=userLang, to='menu')
-        #markup = types.InlineKeyboardMarkup(row_width=1)
-        #markup.add(types.InlineKeyboardButton(util.fastButtongs[userLang]["Back"], callback_data="inlineMenu_menu_goMMenu"))
         messageContent = await util.getText("shazam_DurationError", lang=userLang)
         await edit_message(message, messageContent, markup)
         return await message.delete()
         
     fileID = message.video.file_id if message.video else message.voice.file_id
-    audioPath = "./data/temp/" + await util.random_filename(True, "shazam")
+    audioPath = TEMP_PATH + await util.random_filename(True, "shazam")
 
     await bot.download_file_by_id(fileID, audioPath)
     await bot.send_chat_action(message.chat.id, 'record_voice')
@@ -905,15 +733,12 @@ async def shazamHandler(message: types.Message):
 
 @dp.message_handler(content_types=['audio'])
 async def handleAudioLyric(message: types.Message):
-    if message.chat.type != "private" and OFF_GROUPS:
-        if message.from_id in BOT_BLOCK_IDS:
-            return await message.delete()
+    if message.chat.type != "private":
         await message.reply(BOT_UNAVAILABLE, "html")
-        BOT_BLOCK_IDS.append(message.from_id)
         return await message.answer_sticker(choice(BOT_UNAVAILABLE_STICKERS))
+
     
-    
-    userid = message.from_user.id
+    userid = message.from_id
     ##################################################
     if not await util.user_exists(userid):
         return await sendRegistration(message)
@@ -932,22 +757,16 @@ async def handleAudioLyric(message: types.Message):
         captionChech = audioText.replace("/lyric", "").strip() if audioText else ""
         searchQuery = captionChech or (f"{message.reply_to_message.audio.performer} - {message.reply_to_message.audio.title}" if message.reply_to_message and message.reply_to_message.audio and message.reply_to_message.audio.performer and message.reply_to_message.audio.title else message.reply_to_message.audio.file_name if message.reply_to_message and message.reply_to_message.audio else f"{message.audio.performer} - {message.audio.title}" if message.audio and message.audio.performer and message.audio.title else message.audio.file_name if message.audio else None)
 
-        if searchQuery and len(searchQuery) > 3:
-            return await sendLyric(message, searchQuery)
-        else:
-            return await message.delete()
+        if searchQuery and len(searchQuery) > 3: return await sendLyric(message, searchQuery)
+        else: return await message.delete()
 
     elif userFunction == "findTags" or (audioText and "/tag" in audioText):
         if message.audio:
             if message.audio.file_name.split(".")[-1] != "mp3":
                 messageContent = await util.getText("searchTags_ErrorExt", userid)
                 markup = await util.button_back(lang=userLang, to='menu')
-                #markup = types.InlineKeyboardMarkup(row_width=1)
-                #markup.add(types.InlineKeyboardButton(util.fastButtongs[userLang]["Back"], callback_data="inlineMenu_menu_goMMenu"))
                 await edit_message(message, messageContent, markup)
                 return await message.delete()
-                #mesData = await message.answer(messageContent, "html", reply_markup=markup)
-                 #await util.add_to_dell(userid, mesData)
                 
             if audioText:
                 searchQuery = audioText.replace("/tag", "").strip() 
@@ -972,19 +791,12 @@ async def handleAudioLyric(message: types.Message):
     else:
         await message.answer("Invalid command.")
 
-
-
 async def sendSettings(message:types.Message, userid:int=None,username:str=None, userLang:str=None):
     userid = userid if userid else message.from_user.id
     username = username if username else message.from_user.first_name
     userLang = userLang if userLang else await util.user_get(userid, 'lang')
-    import time
-    startTime = time.time()
     userButtons = await util.user_get(userid, 'sendKeys')
     userAlbumText = await util.user_get(userid, 'writeAlbum')
-    endTime = time.time()
-    execution_time = endTime - startTime
-    #print(f"time: {execution_time}")
     messageContent = await util.getText("settingsMain", lang=userLang)
     messageContent = messageContent.format(
         "✅" if userButtons else "❌",
@@ -1026,9 +838,9 @@ async def process_inline_query(query: types.InlineQuery):
 
         await bot.answer_inline_query(query.id, results)
 
-
 @dp.callback_query_handler(lambda c: True)
 async def process_callback_query(callback_query: types.CallbackQuery):
+    #print(callback_query.data)
     trackID = int(callback_query.data)
     baseCheck = await util.get_from_base(trackID)
     writeAlbum = await util.user_get(callback_query.from_user.id, 'writeAlbum')
@@ -1061,21 +873,10 @@ async def process_callback_query(callback_query: types.CallbackQuery):
             file = await bot.send_audio(callback_query.from_user.id, open(data['path'], 'rb'), audioCaption, "html", performer=artist, title=title)
             await util.add_to_base(trackID,'deezer', file.audio.file_id, artist, title, album)
             os.remove(data['path'])
-            #open(download[0], "rb"), audioCaption, "html", reply_markup=audioMarkup if audioMarkup else None
-            #print(data)
 
     return
 
 
-
-async def another_task():
-    while True:
-        print('sleep')
-        await asyncio.sleep(10)
-
-
-async def on_startup(dp):
-    pass
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
